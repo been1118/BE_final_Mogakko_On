@@ -24,7 +24,8 @@ public class DeclaredMembersGetService {
     public ResponseEntity<Message> getReportedMembers(Members member) {
         Role role = member.getRole();
         if (role != Role.ADMIN) throw new CustomException(NOT_ADMIN);
-        List<DeclaredMembers> declaredMembersList = declaredMembersRepository.findAll();
+        List<DeclaredMembers> declaredMembersList = declaredMembersRepository.findAllFetchJoin();
+        
         return new ResponseEntity<>(new Message("신고된 멤버 조회 성공", declaredMembersList), HttpStatus.OK);
     }
 }
