@@ -23,7 +23,7 @@ public class DeclaredMembers extends Timestamped {
     @Column
     private String reporterNickname;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Members declaredMember;
 
     @Column

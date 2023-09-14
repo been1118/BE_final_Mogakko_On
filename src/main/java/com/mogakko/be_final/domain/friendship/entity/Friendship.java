@@ -23,12 +23,12 @@ public class Friendship extends Timestamped {
     private Long id;
 
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", referencedColumnName = "id")
     private Members sender;
 
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receiver_id", referencedColumnName = "id")
     private Members receiver;
 
