@@ -3,6 +3,7 @@ package com.mogakko.be_final.domain.friendship.service;
 import com.mogakko.be_final.domain.friendship.dto.response.FriendResponseDto;
 import com.mogakko.be_final.domain.friendship.entity.Friendship;
 import com.mogakko.be_final.domain.friendship.entity.FriendshipStatus;
+import com.mogakko.be_final.domain.friendship.repository.FriendshipCustomRepositoryImpl;
 import com.mogakko.be_final.domain.friendship.repository.FriendshipRepository;
 import com.mogakko.be_final.domain.members.entity.Members;
 import com.mogakko.be_final.domain.members.repository.MembersRepository;
@@ -26,11 +27,12 @@ public class FriendshipGetService {
 
     private final MembersRepository membersRepository;
     private final FriendshipRepository friendshipRepository;
+    private final FriendshipCustomRepositoryImpl friendshipCustomRepository;
 
     // 친구 목록 조회
     @Transactional
     public ResponseEntity<Message> getMyFriend(Members member) {
-        List<Friendship> friendshipList = friendshipRepository.findAllByReceiverAndStatusOrSenderAndStatus(member, FriendshipStatus.ACCEPT, member, FriendshipStatus.ACCEPT);
+        List<Friendship> friendshipList = friendshipCustomRepository.findAllByReceiverAndStatusOrSenderAndStatus(member, FriendshipStatus.ACCEPT, member, FriendshipStatus.ACCEPT);
 
         if (friendshipList.isEmpty()) {
             return new ResponseEntity<>(new Message("조회된 친구가 없습니다.", null), HttpStatus.OK);
@@ -55,7 +57,7 @@ public class FriendshipGetService {
     // 받은 요청 조회
     @Transactional(readOnly = true)
     public ResponseEntity<Message> getMyFriendRequest(Members member) {
-        List<Members> friendRequestSenderList = friendshipRepository.findAllByReceiverAndStatus(member, FriendshipStatus.PENDING)
+        List<Members> friendRequestSenderList = friendshipCustomRepository.findAllByReceiverAndStatus(member, FriendshipStatus.PENDING)
                 .stream().map(Friendship::getSender).collect(Collectors.toList());
 
         if (friendRequestSenderList.isEmpty()) {

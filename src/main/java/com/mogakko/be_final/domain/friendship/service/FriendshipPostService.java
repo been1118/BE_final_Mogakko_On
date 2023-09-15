@@ -7,6 +7,7 @@ import com.mogakko.be_final.domain.friendship.dto.request.FriendRequestDto;
 import com.mogakko.be_final.domain.friendship.entity.Friendship;
 import com.mogakko.be_final.domain.friendship.entity.FriendshipStatus;
 import com.mogakko.be_final.domain.friendship.entity.RejectedFriendship;
+import com.mogakko.be_final.domain.friendship.repository.FriendshipCustomRepositoryImpl;
 import com.mogakko.be_final.domain.friendship.repository.FriendshipRepository;
 import com.mogakko.be_final.domain.members.entity.Members;
 import com.mogakko.be_final.domain.members.util.MembersServiceUtilMethod;
@@ -31,6 +32,7 @@ import static com.mogakko.be_final.exception.ErrorCode.*;
 @RequiredArgsConstructor
 public class FriendshipPostService {
     private final FriendshipRepository friendshipRepository;
+    private final FriendshipCustomRepositoryImpl friendshipCustomRepository;
     private final NotificationSendService notificationSendService;
     private final RedisUtil redisUtil;
     private final MembersServiceUtilMethod membersServiceUtilMethod;
@@ -50,7 +52,7 @@ public class FriendshipPostService {
     // 친구 요청 결정
     public ResponseEntity<Message> determineRequest(DetermineRequestDto determineRequestDto, Members member) {
         Members requestSender = membersServiceUtilMethod.findMemberByNickname(determineRequestDto.getRequestSenderNickname());
-        Friendship findFriendRequest = friendshipRepository.findBySenderAndReceiverAndStatus(requestSender, member, FriendshipStatus.PENDING).orElseThrow(
+        Friendship findFriendRequest = friendshipCustomRepository.findBySenderAndReceiverAndStatus(requestSender, member, FriendshipStatus.PENDING).orElseThrow(
                 () -> new CustomException(NOT_FOUND)
         );
 
