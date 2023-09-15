@@ -11,6 +11,7 @@ import com.mogakko.be_final.domain.mogakkoRoom.entity.LanguageEnum;
 import com.mogakko.be_final.domain.mogakkoRoom.entity.MogakkoRoom;
 import com.mogakko.be_final.domain.mogakkoRoom.entity.MogakkoRoomMembers;
 import com.mogakko.be_final.domain.mogakkoRoom.entity.MogakkoRoomMembersLanguageStatistics;
+import com.mogakko.be_final.domain.mogakkoRoom.repository.MogakkoRoomCustomRepositoryImpl;
 import com.mogakko.be_final.domain.mogakkoRoom.repository.MogakkoRoomMembersLanguageStatisticsRepository;
 import com.mogakko.be_final.domain.mogakkoRoom.repository.MogakkoRoomMembersRepository;
 import com.mogakko.be_final.domain.mogakkoRoom.repository.MogakkoRoomRepository;
@@ -46,6 +47,7 @@ public class MogakkoPostService {
     private final BadWordFiltering badWordFiltering;
     private final MogakkoRoomRepository mogakkoRoomRepository;
     private final MogakkoRoomMembersRepository mogakkoRoomMembersRepository;
+    private final MogakkoRoomCustomRepositoryImpl mogakkoRoomCustomRepository;
     private final MogakkoRoomMembersLanguageStatisticsRepository mogakkoRoomMembersLanguageStatisticsRepository;
     private final MogakkoServiceUtilMethod mogakkoServiceUtilMethod;
 
@@ -53,31 +55,28 @@ public class MogakkoPostService {
     @Transactional
     public ResponseEntity<Message> createMogakko(MogakkoRoomCreateRequestDto mogakkoRoomCreateRequestDto, Members member) throws Exception {
 
-        // Session Id, Token 셋팅
-        MogakkoRoomCreateResponseDto newToken = mogakkoServiceUtilMethod.createNewToken(member);
+            // Session Id, Token 셋팅
+            MogakkoRoomCreateResponseDto newToken = mogakkoServiceUtilMethod.createNewToken(member);
 
-        log.info("member 정보 : " + member.getNickname());
+            log.info("member 정보 : " + member.getNickname());
 
-        // 모각코방 빌드
-        MogakkoRoom mogakkoRoom = MogakkoRoom.builder()
-                .sessionId(newToken.getSessionId())
-                .title(badWordFiltering.checkBadWord(mogakkoRoomCreateRequestDto.getTitle()))
-                .masterMemberId(member.getId())
-                .maxMembers(mogakkoRoomCreateRequestDto.getMaxMembers())
-                .language(mogakkoRoomCreateRequestDto.getLanguage())
-                .isOpened(mogakkoRoomCreateRequestDto.getIsOpened())
-                .password(passwordEncoder.encode(mogakkoRoomCreateRequestDto.getPassword()))
-                .lon(mogakkoRoomCreateRequestDto.getLon())
-                .lat(mogakkoRoomCreateRequestDto.getLat())
-                .neighborhood(mogakkoRoomCreateRequestDto.getNeighborhood())
-                .cntMembers(0L)
-                .build();
+            // 모각코방 빌드
+            MogakkoRoom mogakkoRoom = MogakkoRoom.builder()
+                    .sessionId(newToken.getSessionId())
+                    .title(badWordFiltering.checkBadWord(mogakkoRoomCreateRequestDto.getTitle()))
+                    .masterMemberId(member.getId())
+                    .maxMembers(mogakkoRoomCreateRequestDto.getMaxMembers())
+                    .language(mogakkoRoomCreateRequestDto.getLanguage())
+                    .isOpened(mogakkoRoomCreateRequestDto.getIsOpened())
+                    .password(passwordEncoder.encode(mogakkoRoomCreateRequestDto.getPassword()))
+                    .lon(mogakkoRoomCreateRequestDto.getLon())
+                    .lat(mogakkoRoomCreateRequestDto.getLat())
+                    .neighborhood(mogakkoRoomCreateRequestDto.getNeighborhood())
+                    .cntMembers(0L)
+                    .build();
+            mogakkoRoomRepository.save(mogakkoRoom);
 
-        log.info("생성된 모각코 방 : " + mogakkoRoom.getTitle());
-
-        // 빌드된 모각코방 저장
-        mogakkoRoomRepository.save(mogakkoRoom);
-        return new ResponseEntity<>(new Message("모각코방 생성 성공", mogakkoRoom), HttpStatus.OK);
+        return new ResponseEntity<>(new Message("모각코방 생성 성공", null), HttpStatus.OK);
     }
 
     // 모각코 방 입장
@@ -159,13 +158,13 @@ public class MogakkoPostService {
         double lat = mogakko12KmRequestDto.getLat();
         double lon = mogakko12KmRequestDto.getLon();
         List<MogakkoRoom> mogakkoList;
-        if (language == null && searchKeyword == null) mogakkoList = mogakkoRoomRepository.findAllByLatAndLon(lat, lon);
+        if (language == null && searchKeyword == null) mogakkoList = mogakkoRoomCustomRepository.findAllByLatAndLon(lat, lon);
         else if (searchKeyword == null)
-            mogakkoList = mogakkoRoomRepository.findAllByLatAndLonAndLanguage(lat, lon, LanguageEnum.valueOf(language));
+            mogakkoList = mogakkoRoomCustomRepository.findAllByLatAndLonAndLanguage(lat, lon, LanguageEnum.valueOf(language));
         else if (language == null)
-            mogakkoList = mogakkoRoomRepository.findAllBySearchKeywordAndLatAndLon(searchKeyword, lat, lon);
+            mogakkoList = mogakkoRoomCustomRepository.findAllBySearchKeywordAndLatAndLon(searchKeyword, lat, lon);
         else
-            mogakkoList = mogakkoRoomRepository.findAllBySearchKeywordAndLanguageAndLatAndLon(searchKeyword, LanguageEnum.valueOf(language), lat, lon);
+            mogakkoList = mogakkoRoomCustomRepository.findAllBySearchKeywordAndLanguageAndLatAndLon(searchKeyword, LanguageEnum.valueOf(language), lat, lon);
 
         if (mogakkoList.size() == 0) return new ResponseEntity<>(new Message("근처에 모각코가 없습니다.", null), HttpStatus.OK);
 
